@@ -49,7 +49,6 @@ const SKILL_CATEGORIES: SkillCategory[] = [
       "Material UI",
       "shadcn/ui",
       "PrimeReact",
-
       "Framer Motion",
       "GSAP",
     ],
@@ -65,6 +64,8 @@ const SKILL_CATEGORIES: SkillCategory[] = [
       "Firebase",
       "Resend",
       "Nodemailer",
+      "Cloudinary",
+      "ImgBB",
     ],
   },
   {

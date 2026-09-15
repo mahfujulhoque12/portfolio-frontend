@@ -78,7 +78,7 @@ export default function Contact(): React.JSX.Element {
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <p className="font-mono text-[13.5px] text-[#E3B341] mb-3">
-            05. Contact
+            07. Contact
           </p>
 
           <h2 className="text-3xl md:text-4xl font-semibold text-[#E6EDF3] tracking-tight mb-4">

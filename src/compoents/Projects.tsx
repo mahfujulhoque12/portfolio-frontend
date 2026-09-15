@@ -1,19 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { BsGithub } from "react-icons/bs";
-import api from "../lib/api";
 
-interface Project {
-  _id?: string;
-  title: string;
-  image: string;
-  description: string;
-  technologies: string[];
-  liveUrl?: string;
-  githubUrl?: string;
-  type: "personal" | "company";
-}
+import { projectData } from "../data/data";
 
 type Tab = "personal" | "company";
 
@@ -22,39 +12,38 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "company", label: "Company" },
 ];
 
+// 1. Project Description-এর জন্য আলাদা Expandable Text Component
+const ProjectDescription = ({ description }: { description: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 120;
+
+  // বর্ণ ১২০ এর চেয়ে কম হলে সরাসরি পুরো Text দেখাবে
+  if (description.length <= maxLength) {
+    return (
+      <p className="text-[13.5px] text-[#9AA4B2] mt-2 leading-relaxed">
+        {description}
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-[13.5px] text-[#9AA4B2] mt-2 leading-relaxed">
+      {isExpanded ? description : `${description.slice(0, maxLength)}... `}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="text-[#E3B341] hover:underline font-medium ml-1 cursor-pointer focus:outline-none"
+      >
+        {isExpanded ? "Show Less" : "See More"}
+      </button>
+    </p>
+  );
+};
+
 export default function Projects(): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<Tab>("personal");
+  const [activeTab, setActiveTab] = useState<Tab>("company");
   const [showAll, setShowAll] = useState(false);
-  const [projectsList, setProjectsList] = useState<Project[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch Projects using Axios
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get("/api/project/get-projects");
-
-        // Response format handles both array & nested data object
-        if (response.data.success && Array.isArray(response.data.projects)) {
-          setProjectsList(response.data.projects);
-        } else if (Array.isArray(response.data)) {
-          setProjectsList(response.data);
-        }
-      } catch (err: any) {
-        console.error("Failed to fetch projects:", err);
-        setError("Failed to load projects");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
-  }, []);
-
-  // Filter projects by active tab (personal / company)
-  const filteredProjects = projectsList.filter(
+  const filteredProjects = projectData?.filter(
     (project) => project.type === activeTab,
   );
 
@@ -77,8 +66,8 @@ export default function Projects(): React.JSX.Element {
         </h2>
 
         <p className="text-[15px] text-[#9AA4B2] max-w-xl mb-10 leading-relaxed">
-          A mix of personal projects built out of curiosity and work built as
-          part of a team.
+          A showcase of personal projects driven by curiosity and professional
+          projects built through collaboration with talented teams.
         </p>
 
         {/* Tab switcher */}
@@ -115,39 +104,31 @@ export default function Projects(): React.JSX.Element {
           ))}
         </div>
 
-        {/* Loading & Error States */}
-        {loading && (
-          <div className="text-center py-12 text-[#9AA4B2]">
-            Loading projects...
-          </div>
-        )}
-
-        {error && <div className="text-center py-12 text-red-400">{error}</div>}
-
         {/* Project grid */}
-        {!loading && !error && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {visibleProjects.map((project, i) => (
-                <motion.div
-                  key={project._id || project.title + i}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.3,
-                    delay: i * 0.06,
-                    ease: "easeOut",
-                  }}
-                  whileHover={{ y: -4 }}
-                  className="group rounded-lg border border-[#1E2530] bg-[#0D1320] overflow-hidden hover:border-[#E3B341]/40 transition-colors duration-150"
-                >
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {visibleProjects.map((project, i) => (
+              <motion.div
+                key={project._id || project.title + i}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.3,
+                  delay: i * 0.06,
+                  ease: "easeOut",
+                }}
+                whileHover={{ y: -4 }}
+                className="group rounded-lg border border-[#1E2530] bg-[#0D1320] overflow-hidden hover:border-[#E3B341]/40 transition-colors duration-150 flex flex-col justify-between"
+              >
+                <div>
                   <div className="aspect-video overflow-hidden bg-[#0B0F17] border-b border-[#1E2530]">
                     <img
                       src={project.image}
@@ -160,13 +141,12 @@ export default function Projects(): React.JSX.Element {
                   </div>
 
                   <div className="p-5">
-                    <h3 className="text-[16px] font-medium text-[#E6EDF3]">
+                    <h3 className="text-[16px] font-medium text-[#E6EDF3] capitalize">
                       {project.title}
                     </h3>
 
-                    <p className="text-[13.5px] text-[#9AA4B2] mt-2 leading-relaxed">
-                      {project.description}
-                    </p>
+                    {/* 2. এখানে Expandable Description Component টি বসানো হয়েছে */}
+                    <ProjectDescription description={project.description} />
 
                     <div className="flex flex-wrap gap-2 mt-4">
                       {project.technologies?.map((tech) => (
@@ -178,54 +158,67 @@ export default function Projects(): React.JSX.Element {
                         </span>
                       ))}
                     </div>
-
-                    <div className="flex items-center gap-4 mt-5 pt-4 border-t border-[#1E2530]">
-                      {project.liveUrl && (
-                        <a
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-[13px] text-[#E3B341] hover:underline"
-                        >
-                          <ExternalLink size={14} />
-                          Live site
-                        </a>
-                      )}
-
-                      {project.githubUrl && (
-                        <a
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-[13px] text-[#9AA4B2] hover:text-[#E6EDF3] transition-colors duration-150"
-                        >
-                          <BsGithub size={14} />
-                          Code
-                        </a>
-                      )}
-                    </div>
                   </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        )}
+                </div>
+
+                <div className="p-5 pt-0">
+                  <div className="flex items-center gap-4 mt-5 pt-4 border-t border-[#1E2530]">
+                    {project.liveUrl && (
+                      <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[13px] text-[#E3B341] hover:underline"
+                      >
+                        <ExternalLink size={14} />
+                        Live site
+                      </a>
+                    )}
+
+                    {project.githubUrl && (
+                      <a
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[13px] text-[#9AA4B2] hover:text-[#E6EDF3] transition-colors duration-150"
+                      >
+                        <BsGithub size={14} />
+                        Frontend
+                      </a>
+                    )}
+                    {project.githubUrlBackend && (
+                      <a
+                        href={project.githubUrlBackend}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[13px] text-[#9AA4B2] hover:text-[#E6EDF3] transition-colors duration-150"
+                      >
+                        <BsGithub size={14} />
+                        Backend
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Empty state */}
-        {!loading && !error && filteredProjects.length === 0 && (
+        {filteredProjects.length === 0 && (
           <div className="text-center py-12 text-[#9AA4B2]">
             No projects found in this category.
           </div>
         )}
 
-        {/* See More / Show Less */}
+        {/* See More / Show Less for Grid Items */}
         {filteredProjects.length > 6 && (
           <div className="flex justify-center mt-10">
             <button
               onClick={() => setShowAll((prev) => !prev)}
               className="px-5 py-2.5 text-[13.5px] font-medium text-[#E3B341] border border-[#1E2530] rounded-lg hover:border-[#E3B341]/40 transition-colors duration-150 cursor-pointer"
             >
-              {showAll ? "Show Less" : "See More"}
+              {showAll ? "Show Less Projects" : "See More Projects"}
             </button>
           </div>
         )}

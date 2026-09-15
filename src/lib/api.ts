@@ -1,9 +1,9 @@
 import axios from "axios";
-import { BASE_URL_MAIN } from "../compoents/constant/constant";
+import { BASE_URL } from "../compoents/constant/constant";
 import useAuthStore from "../store/auth.store";
 
 const api = axios.create({
-  baseURL: BASE_URL_MAIN,
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
