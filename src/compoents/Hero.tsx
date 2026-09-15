@@ -85,7 +85,7 @@ export default function Hero(): React.JSX.Element {
               <ArrowRight size={16} />
             </a>
             <a
-              href="/resume.pdf"
+              href="/Md Mahfujul Hoque.pdf"
               download
               className="inline-flex items-center gap-2 px-5 py-3 rounded-md border border-[#1E2530] text-[#E6EDF3] text-[14.5px] font-medium hover:border-[#E3B341] transition-colors duration-150"
             >
